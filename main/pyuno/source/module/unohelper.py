@@ -111,10 +111,10 @@ def inspect( obj , out ):
         args = ii.ParameterTypes
         infos = ii.ParameterInfos
         out.write( "( " )
-        for i in range( 0, len( args ) ):
+        for i, val in enumerate(args):
             if i > 0:
                 out.write( ", " )
-            out.write( _mode_to_str( infos[i].aMode ) + " " + args[i].Name + " " + infos[i].aName )
+            out.write( _mode_to_str( infos[i].aMode ) + " " + val.Name + " " + infos[i].aName )
         out.write( " )\n" )
 
     props = access.getProperties( PROPERTY_CONCEPT_ALL )
@@ -199,18 +199,15 @@ def addComponentsToContext( toBeExtendedContext, contextRuntime, componentUrls, 
     loader = smgr.createInstanceWithContext( loaderName, contextRuntime )
     implReg = smgr.createInstanceWithContext( "com.sun.star.registry.ImplementationRegistration",contextRuntime)
 
-    isWin = os.name == 'nt' or os.name == 'dos'
+    isWin = os.name in ('nt', 'dos')
     isMac = sys.platform == 'darwin'
     #   create a temporary registry
     for componentUrl in componentUrls:
         reg = smgr.createInstanceWithContext( "com.sun.star.registry.SimpleRegistry", contextRuntime )
         reg.open( "", 0, 1 )
         if not isWin and componentUrl.endswith( ".uno" ):  # still allow platform independent naming
-            if isMac:
-                componentUrl = componentUrl + ".dylib"
-            else:
-                componentUrl = componentUrl + ".so"
-
+            componentUrl = componentUrl + ".dylib" if isMac else ".so"
+             
         implReg.registerImplementation( loaderName,componentUrl, reg )
         rootKey = reg.getRootKey()
         implementationKey = rootKey.openKey( "IMPLEMENTATIONS" )
